@@ -8,8 +8,6 @@ import { routes } from './app.routes';
 
 // 2. Configuração da Aplicação: O objeto principal que define os providers.
 export const appConfig: ApplicationConfig = {
-  // O array 'providers' contém todas as funcionalidades que você quer disponibilizar
-  // para a sua aplicação.
   providers: [
     // Configura o sistema de rotas da aplicação.
     provideRouter(routes ),

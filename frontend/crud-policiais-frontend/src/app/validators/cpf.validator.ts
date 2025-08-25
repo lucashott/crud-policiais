@@ -1,5 +1,3 @@
-// src/app/validators/cpf.validator.ts
-
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export class CpfValidator {
