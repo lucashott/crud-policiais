@@ -1,48 +1,68 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const pool = require("../db");
+// backend/routes/policiais.js
 
+const express = require('express');
 const router = express.Router();
 
-// Função simples para validar CPF
-function validarCPF(cpf) {
-  return /^\d{11}$/.test(cpf); // Apenas checa 11 dígitos numéricos
-}
+// --- DADOS FALSOS (MOCK DATA) ---
+// Vamos criar um array para simular nosso banco de dados por enquanto.
+// Cada vez que o servidor reiniciar, esta lista será resetada.
+const mockPoliciais = [
+  {
+    id: 1,
+    rg_civil: '11222333-4',
+    rg_militar: 'PM-123456',
+    cpf: '111.222.333-44',
+    data_nascimento: '1990-05-15',
+    matricula: '987654'
+  },
+  {
+    id: 2,
+    rg_civil: '55666777-8',
+    rg_militar: 'PC-654321',
+    cpf: '555.666.777-88',
+    data_nascimento: '1985-11-20',
+    matricula: '123456'
+  }
+];
 
-// POST /policiais - cadastrar
-router.post("/", async (req, res) => {
+// --- ROTAS ---
+
+// Rota para LISTAR todos os policiais (GET /api/policiais)
+// ESTA É A ROTA QUE ESTAVA FALTANDO
+router.get('/', (req, res) => {
   try {
-    const { rg_civil, rg_militar, cpf, data_nascimento, matricula } = req.body;
+    console.log('ROTA DE LISTAGEM: Enviando a lista de policiais.');
+    
+    // Retorna a lista de dados falsos com status 200 (OK)
+    res.status(200).json(mockPoliciais);
 
-    if (!rg_civil || !rg_militar || !cpf || !data_nascimento || !matricula) {
-      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
-    }
-
-    if (!validarCPF(cpf)) {
-      return res.status(400).json({ error: "CPF inválido" });
-    }
-
-    const hashMatricula = await bcrypt.hash(matricula, 10);
-
-    const sql = `
-      INSERT INTO policiais (rg_civil, rg_militar, cpf, data_nascimento, matricula)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    const [result] = await pool.execute(sql, [rg_civil, rg_militar, cpf, data_nascimento, hashMatricula]);
-
-    res.status(201).json({ message: "Policial cadastrado com sucesso", id: result.insertId });
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao cadastrar policial", details: err.message });
+  } catch (error) {
+    console.error('ROTA DE LISTAGEM: Ocorreu um erro:', error);
+    res.status(500).json({ message: 'Erro ao buscar a lista de policiais.' });
   }
 });
 
-// GET /policiais - listar
-router.get("/", async (req, res) => {
+// Rota para CRIAR um novo policial (POST /api/policiais)
+router.post('/', (req, res) => {
   try {
-    const [rows] = await pool.execute("SELECT id, rg_civil, rg_militar, cpf, data_nascimento, matricula FROM policiais");
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar policiais", details: err.message });
+    console.log('ROTA DE CADASTRO: Corpo da requisição recebido:', req.body);
+    const dadosDoPolicial = req.body;
+
+    if (!dadosDoPolicial.cpf || !dadosDoPolicial.matricula) {
+      return res.status(400).json({ message: 'CPF e Matrícula são obrigatórios.' });
+    }
+
+    const novoPolicial = { id: Date.now(), ...dadosDoPolicial };
+
+    // Adiciona o novo policial à nossa lista de dados falsos
+    mockPoliciais.push(novoPolicial);
+
+    console.log('ROTA DE CADASTRO: Policial "salvo" com sucesso:', novoPolicial);
+    res.status(201).json(novoPolicial);
+
+  } catch (error) {
+    console.error('ROTA DE CADASTRO: Ocorreu um erro inesperado:', error);
+    res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
   }
 });
 

@@ -21,9 +21,9 @@ export interface Policial {
   providedIn: 'root'
 } )
 export class PolicialService {
-  // URL base da sua API.
-  // Certifique-se de que a porta (ex: 3000) é a mesma do seu backend.
+  // Ajuste a URL para incluir o prefixo /api
   private readonly apiUrl = 'http://localhost:3000/api/policiais';
+  // ...
 
   // Injeta o HttpClient para fazer requisições HTTP.
   private http = inject(HttpClient );
