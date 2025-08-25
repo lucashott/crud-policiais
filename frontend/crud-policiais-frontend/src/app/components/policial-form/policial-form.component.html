@@ -1,0 +1,60 @@
+<!-- src/app/components/policial-form/policial-form.component.html -->
+
+<div class="form-container">
+    <h1>Cadastro de Policial</h1>
+    <form [formGroup]="policialForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Campo RG Civil -->
+      <mat-form-field appearance="outline">
+        <mat-label>RG Civil</mat-label>
+        <input matInput formControlName="rg_civil" placeholder="Digite o RG Civil">
+        <mat-error *ngIf="policialForm.get('rg_civil')?.touched && policialForm.get('rg_civil')?.invalid">
+          {{ getErrorMessage('rg_civil') }}
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Campo RG Militar -->
+      <mat-form-field appearance="outline">
+        <mat-label>RG Militar</mat-label>
+        <input matInput formControlName="rg_militar" placeholder="Digite o RG Militar">
+        <mat-error *ngIf="policialForm.get('rg_militar')?.touched && policialForm.get('rg_militar')?.invalid">
+          {{ getErrorMessage('rg_militar') }}
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Campo CPF -->
+      <mat-form-field appearance="outline">
+        <mat-label>CPF</mat-label>
+        <input matInput formControlName="cpf" placeholder="000.000.000-00">
+        <mat-error *ngIf="policialForm.get('cpf')?.touched && policialForm.get('cpf')?.invalid">
+          {{ getErrorMessage('cpf') }}
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Campo Data de Nascimento -->
+      <mat-form-field appearance="outline">
+        <mat-label>Data de Nascimento</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="data_nascimento" readonly>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="policialForm.get('data_nascimento')?.touched && policialForm.get('data_nascimento')?.invalid">
+          {{ getErrorMessage('data_nascimento') }}
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Campo Matrícula -->
+      <mat-form-field appearance="outline">
+        <mat-label>Matrícula</mat-label>
+        <input matInput formControlName="matricula" placeholder="Digite a matrícula">
+        <mat-error *ngIf="policialForm.get('matricula')?.touched && policialForm.get('matricula')?.invalid">
+          {{ getErrorMessage('matricula') }}
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Botão de Envio -->
+      <button mat-raised-button color="primary" type="submit" [disabled]="policialForm.invalid">
+        Cadastrar Policial
+      </button>
+    </form>
+  </div>
+  

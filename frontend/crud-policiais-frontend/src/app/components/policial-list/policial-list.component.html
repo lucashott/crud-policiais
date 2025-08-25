@@ -1,0 +1,60 @@
+<!-- src/app/components/policial-list/policial-list.component.html -->
+
+<div class="list-container">
+    <div class="header">
+      <h1>Policiais Cadastrados</h1>
+      <!-- O `routerLink` navega para a rota do formulário de cadastro -->
+      <button mat-raised-button color="primary" routerLink="/policiais/novo">
+        <mat-icon>add</mat-icon>
+        Novo Cadastro
+      </button>
+    </div>
+  
+    <!-- 
+      Usamos a diretiva *ngIf com o pipe 'async'.
+      Isso resolve o Observable 'policiais$' e coloca o resultado (o array) na variável 'policiais'.
+      O bloco #loading será exibido enquanto os dados não chegarem.
+    -->
+    <div *ngIf="policiais$ | async as policiais; else loading" class="cards-grid">
+      
+      <!-- Se o array estiver vazio, mostra uma mensagem amigável -->
+      <div *ngIf="policiais.length === 0; else list" class="empty-state">
+        <mat-icon>info</mat-icon>
+        <p>Nenhum policial cadastrado ainda.</p>
+        <p>Clique em "Novo Cadastro" para começar.</p>
+      </div>
+  
+      <!-- 
+        Se o array tiver dados, a diretiva *ngFor itera sobre ele.
+        O bloco #list é renderizado.
+      -->
+      <ng-template #list>
+        <mat-card *ngFor="let policial of policiais" class="policial-card">
+          <mat-card-header>
+            <mat-card-title>{{ policial.rg_civil }}</mat-card-title>
+            <mat-card-subtitle>Matrícula: {{ policial.matricula }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p><strong>RG Militar:</strong> {{ policial.rg_militar }}</p>
+            <p><strong>CPF:</strong> {{ policial.cpf }}</p>
+            <!-- Usamos o pipe 'date' para formatar a data -->
+            <p><strong>Nascimento:</strong> {{ policial.data_nascimento | date:'dd/MM/yyyy' }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <!-- Botões de ação (editar/excluir) podem ser adicionados aqui no futuro -->
+            <button mat-button>EDITAR</button>
+            <button mat-button color="warn">EXCLUIR</button>
+          </mat-card-actions>
+        </mat-card>
+      </ng-template>
+    </div>
+  
+    <!-- Template #loading: Exibido enquanto o Observable está sendo resolvido -->
+    <ng-template #loading>
+      <div class="loading-spinner">
+        <mat-spinner></mat-spinner>
+        <p>Carregando policiais...</p>
+      </div>
+    </ng-template>
+  </div>
+  
