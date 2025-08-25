@@ -90,4 +90,60 @@ router.post('/', (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await db.execute('SELECT * FROM policiais WHERE id = ?', [id]);
+    if (rows.length > 0) {
+      res.status(200).json(rows[0]);
+    } else {
+      res.status(404).json({ message: 'Policial não encontrado.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar o policial.' });
+  }
+});
+
+// PUT /api/policiais/:id (Atualizar um policial)
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rg_civil, rg_militar, cpf, data_nascimento, matricula } = req.body;
+
+    const query = `
+      UPDATE policiais 
+      SET rg_civil = ?, rg_militar = ?, cpf = ?, data_nascimento = ?, matricula = ?
+      WHERE id = ?
+    `;
+    const values = [rg_civil, rg_militar, cpf, data_nascimento, matricula, id];
+    
+    const [result] = await db.execute(query, values);
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Policial atualizado com sucesso.' });
+    } else {
+      res.status(404).json({ message: 'Policial não encontrado para atualização.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar o policial.' });
+  }
+});
+
+// DELETE /api/policiais/:id (Excluir um policial)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.execute('DELETE FROM policiais WHERE id = ?', [id]);
+
+    if (result.affectedRows > 0) {
+      // Status 204 (No Content) é uma resposta padrão para exclusões bem-sucedidas.
+      res.status(204).send(); 
+    } else {
+      res.status(404).json({ message: 'Policial não encontrado para exclusão.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir o policial.' });
+  }
+});
+
 module.exports = router;

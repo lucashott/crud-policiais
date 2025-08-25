@@ -12,8 +12,14 @@ export const routes: Routes = [
     path: 'policiais',
     component: PolicialListComponent
   },
+
   {
-    // Rota de Cadastro: Quando a URL for http://.../policiais/novo.
+    path: 'policiais/editar/:id',
+    component: PolicialFormComponent
+  },
+  // 2. ROTA DE CADASTRO (EXISTENTE)
+  // Mantida como está.
+  {
     path: 'policiais/novo',
     component: PolicialFormComponent
   },

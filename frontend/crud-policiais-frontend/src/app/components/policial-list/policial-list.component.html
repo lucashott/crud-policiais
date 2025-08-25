@@ -44,8 +44,8 @@
             <p><strong>Nascimento:</strong> {{ policial.data_nascimento | date:'dd/MM/yyyy' }}</p>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button>EDITAR</button>
-            <button mat-button color="warn">EXCLUIR</button>
+            <button mat-button [routerLink]="['/policiais/editar', policial.id]">EDITAR</button>
+            <button mat-button color="warn" (click)="excluir(policial.id!)">EXCLUIR</button>
           </mat-card-actions>
         </mat-card>
       </ng-template>

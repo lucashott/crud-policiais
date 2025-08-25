@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,8 +7,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
-import { PolicialService } from '../../services/policial.service'; 
+import { Router, ActivatedRoute } from '@angular/router';
+import { filter, switchMap } from 'rxjs';
+
+import { PolicialService } from '../../services/policial.service';
 import { CpfValidator } from '../../validators/cpf.validator';
 
 @Component({
@@ -27,24 +29,38 @@ import { CpfValidator } from '../../validators/cpf.validator';
   templateUrl: './policial-form.component.html',
   styleUrls: ['./policial-form.component.css']
 })
-
-export class PolicialFormComponent {
+export class PolicialFormComponent implements OnInit {
   policialForm: FormGroup;
 
-  // Injeção de dependências moderna
+  // Injeção de dependências com `inject`
   private fb = inject(FormBuilder);
   private policialService = inject(PolicialService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  policialId: number | null = null; // usado para saber se é edição
 
   constructor() {
     this.policialForm = this.fb.group({
-      // Campos do formulário com validações
       rg_civil: ['', [Validators.required, Validators.maxLength(20)]],
       rg_militar: ['', [Validators.required, Validators.maxLength(20)]],
       cpf: ['', [Validators.required, CpfValidator.cpfValido()]],
       data_nascimento: ['', [Validators.required]],
       matricula: ['', [Validators.required, Validators.maxLength(50)]]
+    });
+  }
+
+  ngOnInit(): void {
+    // Verifica se a rota tem `id` e carrega os dados se for edição
+    this.route.paramMap.pipe(
+      filter(params => params.has('id')),
+      switchMap(params => this.policialService.buscarPolicialPorId(Number(params.get('id'))))
+    ).subscribe(policial => {
+      if (policial) {
+        this.policialId = policial.id!;
+        this.policialForm.patchValue(policial);
+      }
     });
   }
 
@@ -56,27 +72,28 @@ export class PolicialFormComponent {
       return;
     }
 
-    // Chama o serviço para cadastrar
-    this.policialService.cadastrarPolicial(this.policialForm.value).subscribe({
-      next: (response) => {
-        this.snackBar.open('Policial cadastrado com sucesso!', 'Fechar', { 
-          duration: 3000,
-          panelClass: ['snackbar-success'] // Classe para estilizar o sucesso
-        });
-        // Navega para a lista de policiais após o sucesso
-        this.router.navigate(['/policiais']); 
-      },
-      error: (err) => {
-        console.error('Erro ao cadastrar policial:', err);
-        this.snackBar.open(err.error.message || 'Erro ao cadastrar. Tente novamente.', 'Fechar', { 
-          duration: 5000,
-          panelClass: ['snackbar-error'] // Classe para estilizar o erro
-        });
-      }
-    });
+    if (this.policialId) {
+      // --- MODO EDIÇÃO ---
+      this.policialService.editarPolicial(this.policialId, this.policialForm.value).subscribe({
+        next: () => {
+          this.snackBar.open('Policial atualizado com sucesso!', 'Fechar', { duration: 3000 });
+          this.router.navigate(['/policiais']);
+        },
+        error: () => this.snackBar.open('Erro ao atualizar.', 'Fechar', { duration: 3000 })
+      });
+    } else {
+      // --- MODO CADASTRO ---
+      this.policialService.cadastrarPolicial(this.policialForm.value).subscribe({
+        next: () => {
+          this.snackBar.open('Policial cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+          this.router.navigate(['/policiais']);
+        },
+        error: () => this.snackBar.open('Erro ao cadastrar.', 'Fechar', { duration: 3000 })
+      });
+    }
   }
 
-  // Método auxiliar para facilitar o acesso aos erros no template
+  // Método auxiliar para erros nos campos
   getErrorMessage(fieldName: string): string {
     const field = this.policialForm.get(fieldName);
     if (field?.hasError('required')) {

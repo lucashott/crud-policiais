@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-//Importações do RxJS e de Formulários Reativos
+
+// Importações do RxJS e de Formulários Reativos
 import { Observable, switchMap, debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
@@ -12,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field'; 
 import { MatInputModule } from '@angular/material/input';       
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { Policial, PolicialService } from '../../services/policial.service';
 
@@ -28,41 +30,48 @@ import { Policial, PolicialService } from '../../services/policial.service';
     MatProgressSpinnerModule,
     MatIconModule,
     MatFormFieldModule, 
-    MatInputModule      
+    MatInputModule,
+    MatSnackBarModule // necessário para usar o MatSnackBar
   ],
   templateUrl: './policial-list.component.html',
   styleUrls: ['./policial-list.component.css']
 })
 
-// --- Classe do Componente (com lógica de busca) ---
+// --- Classe do Componente (com lógica de busca e exclusão) ---
 export class PolicialListComponent implements OnInit {
   // Observable que conterá a lista de policiais.
   policiais$!: Observable<Policial[]>;
 
-  //Controle de formulário para o campo de busca.
+  // Controle de formulário para o campo de busca.
   searchControl = new FormControl('');
 
-  // Injeção de dependências.
+  // Injeções de dependência.
   private policialService = inject(PolicialService);
+  private snackBar = inject(MatSnackBar);
 
   constructor() { }
 
   ngOnInit(): void {
-    // 4. Lógica reativa para a busca.
-    // Atribuímos ao policiais$ um pipeline de operadores RxJS que reage
-    // às mudanças no valor do campo de busca.
+    // Lógica reativa para a busca.
     this.policiais$ = this.searchControl.valueChanges.pipe(
-      // startWith(''): Emite um valor inicial (string vazia) assim que a inscrição ocorre.
       startWith(''),
-
-      // debounceTime(300): Espera por 300 milissegundos de inatividade do usuário antes de emitir o valor.
       debounceTime(300),
-
-      // distinctUntilChanged(): Só emite o valor se ele for diferente do valor anterior.
       distinctUntilChanged(),
-
-      // switchMap: Cancela a requisição anterior se uma nova busca for iniciada.
       switchMap(termo => this.policialService.listarPoliciais(termo || ''))
     );
+  }
+
+  excluir(id: number): void {
+    if (confirm('Tem certeza que deseja excluir este policial?')) {
+      this.policialService.excluirPolicial(id).subscribe({
+        next: () => {
+          this.snackBar.open('Policial excluído com sucesso!', 'Fechar', { duration: 3000 });
+          this.policiais$ = this.policialService.listarPoliciais();
+        },
+        error: () => {
+          this.snackBar.open('Erro ao excluir o policial.', 'Fechar', { duration: 3000 });
+        }
+      });
+    }
   }
 }
