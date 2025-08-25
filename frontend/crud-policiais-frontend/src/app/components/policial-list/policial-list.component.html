@@ -3,6 +3,20 @@
 <div class="list-container">
     <div class="header">
       <h1>Policiais Cadastrados</h1>
+  
+      <!-- 
+        CAMPO DE BUSCA ADICIONADO AQUI 
+        - mat-form-field: Componente do Angular Material que envolve o campo de input.
+        - [formControl]="searchControl": Vincula este input ao 'searchControl' que criamos no arquivo .ts.
+                                         Qualquer alteração aqui será refletida no pipeline do RxJS.
+        - mat-icon matSuffix: Adiciona um ícone de lupa no final do campo.
+      -->
+      <mat-form-field class="search-field" appearance="outline">
+        <mat-label>Buscar por CPF ou RG</mat-label>
+        <input matInput [formControl]="searchControl" placeholder="Digite para buscar...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+  
       <!-- O `routerLink` navega para a rota do formulário de cadastro -->
       <button mat-raised-button color="primary" routerLink="/policiais/novo">
         <mat-icon>add</mat-icon>
@@ -17,11 +31,15 @@
     -->
     <div *ngIf="policiais$ | async as policiais; else loading" class="cards-grid">
       
-      <!-- Se o array estiver vazio, mostra uma mensagem amigável -->
+      <!-- 
+        Se o array estiver vazio, mostra uma mensagem amigável.
+        Agora, esta mensagem também aparecerá se a busca não retornar resultados.
+      -->
       <div *ngIf="policiais.length === 0; else list" class="empty-state">
         <mat-icon>info</mat-icon>
-        <p>Nenhum policial cadastrado ainda.</p>
-        <p>Clique em "Novo Cadastro" para começar.</p>
+        <p>Nenhum policial encontrado.</p>
+        <p *ngIf="!searchControl.value">Clique em "Novo Cadastro" para começar.</p>
+        <p *ngIf="searchControl.value">Tente um termo de busca diferente.</p>
       </div>
   
       <!-- 

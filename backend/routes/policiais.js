@@ -4,8 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 // --- DADOS FALSOS (MOCK DATA) ---
-// Vamos criar um array para simular nosso banco de dados por enquanto.
-// Cada vez que o servidor reiniciar, esta lista será resetada.
+// Este array simula nosso banco de dados.
 const mockPoliciais = [
   {
     id: 1,
@@ -27,14 +26,37 @@ const mockPoliciais = [
 
 // --- ROTAS ---
 
-// Rota para LISTAR todos os policiais (GET /api/policiais)
-// ESTA É A ROTA QUE ESTAVA FALTANDO
+// Rota para LISTAR todos os policiais (GET /api/policiais) - COM LÓGICA DE FILTRO
 router.get('/', (req, res) => {
   try {
-    console.log('ROTA DE LISTAGEM: Enviando a lista de policiais.');
+    // Pega o termo de busca da query string da URL (ex: ?busca=valor)
+    const { busca } = req.query;
+
+    // Se não houver termo de busca, retorna a lista completa
+    if (!busca) {
+      console.log('ROTA DE LISTAGEM: Enviando a lista completa de policiais.');
+      return res.status(200).json(mockPoliciais);
+    }
+
+    // Se houver um termo de busca, filtra o array
+    console.log(`ROTA DE LISTAGEM: Filtrando policiais com o termo "${busca}"`);
     
-    // Retorna a lista de dados falsos com status 200 (OK)
-    res.status(200).json(mockPoliciais);
+    // Converte o termo de busca para minúsculas para uma busca case-insensitive
+    const termoBuscaLowerCase = busca.toLowerCase();
+
+    // Usa o método .filter() do array para criar uma nova lista com os resultados
+    const policiaisFiltrados = mockPoliciais.filter(policial => {
+      // Verifica se o termo de busca está contido em algum dos campos
+      const rgCivilMatch = policial.rg_civil.toLowerCase().includes(termoBuscaLowerCase);
+      const rgMilitarMatch = policial.rg_militar.toLowerCase().includes(termoBuscaLowerCase);
+      const cpfMatch = policial.cpf.toLowerCase().includes(termoBuscaLowerCase);
+      
+      // Retorna true se encontrou em qualquer um dos campos
+      return rgCivilMatch || rgMilitarMatch || cpfMatch;
+    });
+
+    // Retorna a lista filtrada
+    res.status(200).json(policiaisFiltrados);
 
   } catch (error) {
     console.error('ROTA DE LISTAGEM: Ocorreu um erro:', error);

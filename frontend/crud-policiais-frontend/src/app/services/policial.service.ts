@@ -1,7 +1,8 @@
 // src/app/services/policial.service.ts
 
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+// Adicione a importação de HttpParams
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 /**
@@ -21,9 +22,8 @@ export interface Policial {
   providedIn: 'root'
 } )
 export class PolicialService {
-  // Ajuste a URL para incluir o prefixo /api
+  // URL da API do backend.
   private readonly apiUrl = 'http://localhost:3000/api/policiais';
-  // ...
 
   // Injeta o HttpClient para fazer requisições HTTP.
   private http = inject(HttpClient );
@@ -32,22 +32,31 @@ export class PolicialService {
 
   /**
    * Envia os dados de um novo policial para o backend.
-   * @param dados Os dados do policial a serem cadastrados, seguindo a interface Policial.
-   * @returns Um Observable com o policial que foi criado no banco (incluindo o ID).
+   * @param dados Os dados do policial a serem cadastrados.
+   * @returns Um Observable com o policial que foi criado.
    */
   cadastrarPolicial(dados: Policial): Observable<Policial> {
-    // Faz uma requisição HTTP POST para a URL da API, enviando os dados.
-    // O <Policial> indica que esperamos receber um objeto do tipo Policial na resposta.
     return this.http.post<Policial>(this.apiUrl, dados );
   }
 
   /**
-   * Busca a lista de todos os policiais cadastrados no backend.
+   * Busca a lista de policiais, opcionalmente filtrando por um termo de busca.
+   * @param termoBusca (Opcional) O termo a ser pesquisado (CPF, RG Civil ou RG Militar).
    * @returns Um Observable com um array de policiais.
    */
-  listarPoliciais(): Observable<Policial[]> {
-    // Faz uma requisição HTTP GET para a URL da API.
-    // O <Policial[]> indica que esperamos receber um array de objetos do tipo Policial.
-    return this.http.get<Policial[]>(this.apiUrl );
+  listarPoliciais(termoBusca: string = ''): Observable<Policial[]> {
+    // Cria um objeto HttpParams para construir a query string da URL.
+    let params = new HttpParams();
+
+    // Verifica se um termo de busca foi fornecido e não está vazio.
+    if (termoBusca.trim()) {
+      // Se houver um termo, adiciona o parâmetro 'busca' à requisição.
+      // A URL final será, por exemplo: .../api/policiais?busca=123
+      params = params.set('busca', termoBusca);
+    }
+
+    // Faz a requisição GET, passando o objeto de parâmetros.
+    // O Angular cuidará de montar a URL corretamente.
+    return this.http.get<Policial[]>(this.apiUrl, { params } );
   }
 }

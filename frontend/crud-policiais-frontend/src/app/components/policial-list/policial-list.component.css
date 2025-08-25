@@ -44,3 +44,8 @@
     margin-bottom: 1rem;
   }
   
+  .search-field {
+    width: 300px; /* Ajuste a largura conforme necessário */
+    margin: 0 1.5rem;
+  }
+  
