@@ -62,14 +62,22 @@ export class PolicialListComponent implements OnInit {
   }
 
   excluir(id: number): void {
+    // 1. Confirmação com o usuário (boa prática)
     if (confirm('Tem certeza que deseja excluir este policial?')) {
+      // 2. Chama o método do serviço
       this.policialService.excluirPolicial(id).subscribe({
         next: () => {
+          // 3. Feedback de sucesso
           this.snackBar.open('Policial excluído com sucesso!', 'Fechar', { duration: 3000 });
+          
+          // 4. ATUALIZA A LISTA NA TELA
+          // A forma mais simples é recarregar a lista do zero.
           this.policiais$ = this.policialService.listarPoliciais();
         },
-        error: () => {
-          this.snackBar.open('Erro ao excluir o policial.', 'Fechar', { duration: 3000 });
+        error: (err) => {
+          // 5. Feedback de erro
+          console.error('ERRO AO EXCLUIR:', err);
+          this.snackBar.open('Erro ao excluir o policial. Tente novamente.', 'Fechar', { duration: 4000 });
         }
       });
     }
